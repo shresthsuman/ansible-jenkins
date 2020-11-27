@@ -1,6 +1,7 @@
 - name: graylog-docker_compose
   hosts: all
   gather_facts: yes
+  become: true
 #   vars_files:
 #     - vars/graylog-default.yml
   tasks:
