@@ -5,10 +5,12 @@
 #   vars_files:
 #     - vars/graylog-default.yml
   tasks:
-    - name: Copy file with owner and permissions
-      copy:
-        src: /home/centos/docker_server/vars/
-        dest: /home/centos/docker_server/vars/
+    - name: execute shell
+      shell: whoami
+#     - name: Copy file with owner and permissions
+#       copy:
+#         src: /home/centos/docker_server/vars/
+#         dest: /home/centos/docker_server/vars/
 
 #     - community.general.docker_compose:
 #         project_name: graylog-3
