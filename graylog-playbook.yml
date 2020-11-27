@@ -1,12 +1,10 @@
-# - name: graylog-docker_compose
-#   hosts: all
-#   gather_facts: yes
-#   become: true
-# #   vars_files:
-# #     - vars/graylog-default.yml
----
-- hosts: all
+- name: graylog-docker_compose
+  hosts: all
+  gather_facts: yes
   become: true
+#   vars_files:
+#     - vars/graylog-default.yml
+
   tasks:
     - community.general.docker_compose:
         project_name: graylog-3
