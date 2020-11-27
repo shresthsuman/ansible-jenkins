@@ -35,10 +35,10 @@
     - name: Download Filebeat
       get_url:
         url: https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.10.0-amd64.deb
-        dest: /home/filebeat-7.10.0-amd64.deb
+        dest: /home/graylog/filebeat-7.10.0-amd64.deb
 
     - name: Install Filebeat on remote server
-      shell: cd /home/ && dpkg -i filebeat-7.10.0-amd64.deb
+      shell: cd /home/graylog/ && dpkg -i filebeat-7.10.0-amd64.deb
 
     - name: Enable service filebeat, and not touch the state
       service:
@@ -53,9 +53,9 @@
     - name: copy graylog config file to remote server
       get_url:
         url: https://raw.githubusercontent.com/shresthsuman/ansible-jenkins/main/vars/graylog.conf
-        dest: /home/graylog.conf
+        dest: /home/graylog/graylog.conf
 
     - name: copy nginx config file to remote server
       get_url:
         url: https://raw.githubusercontent.com/shresthsuman/ansible-jenkins/main/vars/nginx.conf
-        dest: /home/nginx.conf
+        dest: /home/graylog/nginx.conf
