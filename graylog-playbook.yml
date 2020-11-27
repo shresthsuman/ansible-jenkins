@@ -1,0 +1,90 @@
+- name: graylog-docker_compose
+  hosts: all
+  gather_facts: yes
+  vars_files:
+    - vars/graylog-default.yml
+  tasks:
+    - name: Copy file with owner and permissions
+      copy:
+        src: /home/centos/docker_server/vars/
+        dest: /home/centos/docker_server/vars/
+
+    - community.general.docker_compose:
+        project_name: graylog-3
+        definition:
+          version: '2'
+          services:
+            web:
+              image: nginx:latest
+              volumes:
+                - /home/centos/docker_server/vars/nginx.conf:/etc/nginx/nginx.conf:ro
+                - /home/centos/docker_server/vars/graylog.conf:/etc/nginx/conf.d/graylog.conf:ro
+              ports:
+                - 80:80
+                - 443:443
+              # environment:
+               # - NGINX_HOST=foobar.com
+               # - NGINX_PORT=80
+
+            # MongoDB: https://hub.docker.com/_/mongo/
+            mongodb:
+              image: mongo:3
+              volumes:
+                - mongo_data:/data/db
+            # Elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/6.x/docker.html
+            elasticsearch:
+              image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.10
+              volumes:
+                - es_data:/usr/share/elasticsearch/data
+              environment:
+                - http.host=0.0.0.0
+                - transport.host=localhost
+                - network.host=0.0.0.0
+                - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+              ulimits:
+                memlock:
+                  soft: -1
+                  hard: -1
+              mem_limit: 1g
+            # Graylog: https://hub.docker.com/r/graylog/graylog/
+            graylog:
+              image: graylog/graylog:3.3
+              volumes:
+                - graylog_data:/usr/share/graylog/data
+                # - /home/centos/docker_server/vars/graylog-server.conf:/usr/share/graylog/data/config/graylog.conf:ro
+              environment:
+                # CHANGE ME (must be at least 16 characters)!
+                - GRAYLOG_PASSWORD_SECRET=Welcome2020123456789
+                # Password: admin
+                - GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+                # - GRAYLOG_HTTP_PUBLISH_URI=
+                # - GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9000/
+                # - GRAYLOG_HTTP_BIND_ADDRESS={{ host_os_server }}
+                - GRAYLOG_HTTP_EXTERNAL_URI={{ host_os_ip }}
+              links:
+                - mongodb:mongo
+                - elasticsearch
+              depends_on:
+                - mongodb
+                - elasticsearch
+              ports:
+                # Graylog web interface and REST API
+                - 9000:9000
+                # Syslog TCP
+                - 1514:1514
+                # Syslog UDP
+                - 1514:1514/udp
+                # GELF TCP
+                - 12201:12201
+                # GELF UDP
+                - 12201:12201/udp
+                # Filebeat
+                - 5044:5044
+          # Volumes for persisting data, see https://docs.docker.com/engine/admin/volumes/volumes/
+          volumes:
+            mongo_data:
+              driver: local
+            es_data:
+              driver: local
+            graylog_data:
+              driver: local

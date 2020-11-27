@@ -1,0 +1,51 @@
+---
+- hosts: all
+  become: true
+
+  tasks:
+    - name: Install aptitude using apt
+      apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+    - name: Install required system packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: ['openjdk-8-jre-headless', 'uuid-runtime', 'pwgen', 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+
+    - name: Update apt and install docker-ce
+      apt: update_cache=yes name=docker-ce state=latest
+
+    - name: Install Docker Module for Python
+      pip:
+        name: docker
+
+    - name: Install docker-compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: 'u+x,g+x'
+
+    - name: Download Filebeat
+      get_url:
+        url: https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.10.0-amd64.deb
+        dest: /home/centos/docker_server/vars/filebeat-7.10.0-amd64.deb
+
+    - name: Install Filebeat on remote server
+      shell: cd /home/centos/docker_server/vars/ && dpkg -i filebeat-7.10.0-amd64.deb
+
+    - name: Enable service filebeat, and not touch the state
+      service:
+        name: filebeat
+        enabled: yes
+
+    - name: Restart service filebeat, in all cases
+      service:
+        name: filebeat
+        state: restarted
