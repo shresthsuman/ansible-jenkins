@@ -52,5 +52,5 @@
 
     - name: copy files to remote server
       get_url:
-        url: https://github.com/shresthsuman/ansible-jenkins/blob/main/vars/graylog.conf
+        url: https://raw.githubusercontent.com/shresthsuman/ansible-jenkins/main/vars/graylog.conf
         dest: /home/centos/docker_server/vars/graylog.conf
