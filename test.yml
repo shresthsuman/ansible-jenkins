@@ -1,56 +1,74 @@
----
-- hosts: all
+- name: graylog-docker_compose
+  hosts: all
+  gather_facts: yes
   become: true
+#   vars_files:
+#     - vars/graylog-default.yml
 
   tasks:
-    - name: Install aptitude using apt
-      apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
-
-    - name: Install required system packages
-      apt: name={{ item }} state=latest update_cache=yes
-      loop: ['openjdk-8-jre-headless', 'uuid-runtime', 'pwgen', 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
-    - name: Add Docker GPG apt Key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
-
-    - name: Add Docker Repository
-      apt_repository:
-        repo: deb https://download.docker.com/linux/ubuntu bionic stable
-        state: present
-
-    - name: Update apt and install docker-ce
-      apt: update_cache=yes name=docker-ce state=latest
-
-    - name: Install Docker Module for Python
-      pip:
-        name: docker
-
-    - name: Install docker-compose
-      get_url:
-        url: https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-x86_64
-        dest: /usr/local/bin/docker-compose
-        mode: 'u+x,g+x'
-
-    - name: Download Filebeat
-      get_url:
-        url: https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.10.0-amd64.deb
-        dest: /home/centos/docker_server/vars/filebeat-7.10.0-amd64.deb
-
-    - name: Install Filebeat on remote server
-      shell: cd /home/centos/docker_server/vars/ && dpkg -i filebeat-7.10.0-amd64.deb
-
-    - name: Enable service filebeat, and not touch the state
-      service:
-        name: filebeat
-        enabled: yes
-
-    - name: Restart service filebeat, in all cases
-      service:
-        name: filebeat
-        state: restarted
-
-    - name: copy files to remote server
-      get_url:
-        url: https://raw.githubusercontent.com/shresthsuman/ansible-jenkins/main/vars/graylog.conf
-        dest: /home/centos/docker_server/vars/graylog.conf
+    - community.general.docker_compose:
+        project_name: graylog-3
+        definition:
+          version: '2'
+          services:
+            # MongoDB: https://hub.docker.com/_/mongo/
+            mongodb:
+              image: mongo:3
+              volumes:
+                - mongo_data:/data/db
+            # Elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/6.x/docker.html
+            elasticsearch:
+              image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.10
+              volumes:
+                - es_data:/usr/share/elasticsearch/data
+              environment:
+                - http.host=0.0.0.0
+                - transport.host=localhost
+                - network.host=0.0.0.0
+                - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+              ulimits:
+                memlock:
+                  soft: -1
+                  hard: -1
+              mem_limit: 1g
+            # Graylog: https://hub.docker.com/r/graylog/graylog/
+            graylog:
+              image: graylog/graylog:3.3
+              volumes:
+                - graylog_data:/usr/share/graylog/data
+              environment:
+                # CHANGE ME (must be at least 16 characters)!
+                - GRAYLOG_PASSWORD_SECRET=Welcome2020123456789
+                # Password: admin
+                - GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+                # - GRAYLOG_HTTP_PUBLISH_URI=
+                # - GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9000/
+                # - GRAYLOG_HTTP_BIND_ADDRESS={{ host_os_server }}
+                - GRAYLOG_HTTP_EXTERNAL_URI=http://ec2-3-123-74-223.eu-central-1.compute.amazonaws.com:9000/
+              links:
+                - mongodb:mongo
+                - elasticsearch
+              depends_on:
+                - mongodb
+                - elasticsearch
+              ports:
+                # Graylog web interface and REST API
+                - 9000:9000
+                # Syslog TCP
+                - 1514:1514
+                # Syslog UDP
+                - 1514:1514/udp
+                # GELF TCP
+                - 12201:12201
+                # GELF UDP
+                - 12201:12201/udp
+                # Filebeat
+                - 5044:5044
+          # Volumes for persisting data, see https://docs.docker.com/engine/admin/volumes/volumes/
+          volumes:
+            mongo_data:
+              driver: local
+            es_data:
+              driver: local
+            graylog_data:
+              driver: local
