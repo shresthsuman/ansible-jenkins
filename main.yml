@@ -53,9 +53,9 @@
     - name: copy graylog config file to remote server
       get_url:
         url: https://raw.githubusercontent.com/shresthsuman/ansible-jenkins/main/vars/graylog.conf
-        dest: /home/docker_server/vars/graylog.conf
+        dest: /home/graylog.conf
 
     - name: copy nginx config file to remote server
       get_url:
         url: https://raw.githubusercontent.com/shresthsuman/ansible-jenkins/main/vars/nginx.conf
-        dest: /home/docker_server/vars/nginx.conf
+        dest: /home/nginx.conf
