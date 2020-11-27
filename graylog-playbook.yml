@@ -15,8 +15,8 @@
             web:
               image: nginx:latest
               volumes:
-                - /home/docker_server/vars/nginx.conf:/etc/nginx/nginx.conf:ro
-                - /home/docker_server/vars/graylog.conf:/etc/nginx/conf.d/graylog.conf:ro
+                - /home/nginx.conf:/etc/nginx/nginx.conf:ro
+                - /home/graylog.conf:/etc/nginx/conf.d/graylog.conf:ro
               ports:
                 - 80:80
                 - 443:443
