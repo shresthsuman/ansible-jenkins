@@ -14,8 +14,8 @@
             web:
               image: nginx:latest
               volumes:
-                - /home/nginx.conf:/etc/nginx/nginx.conf:ro
-                - /home/graylog.conf:/etc/nginx/conf.d/graylog.conf:ro
+                - /home/graylog/nginx.conf:/etc/nginx/nginx.conf:ro
+                - /home/graylog/graylog.conf:/etc/nginx/conf.d/graylog.conf:ro
               ports:
                 - 80:80
                 - 443:443
