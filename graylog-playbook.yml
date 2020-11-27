@@ -6,7 +6,7 @@
   tasks:
     - name: Copy file with owner and permissions
       copy:
-        src: /home/centos/docker_server/vars/
+        src: ./vars/
         dest: /home/centos/docker_server/vars/
 
 #     - community.general.docker_compose:
