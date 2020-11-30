@@ -6,6 +6,15 @@
 #     - vars/graylog-default.yml
 
   tasks:
+
+    - name: Generate an OpenSSL Certificate Signing Request
+      shell: openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /home/graylog/nginx/ssl/graylog.key -out /home/graylog/nginx/ssl/graylog.crt -subj "/C=DE/ST=Munich/L=Munich/O=Omni IT GmbH/OU=DevOps/emailAddress=shresth.suman@omniit.de"
+
+    - name: Generate DH Parameters with a different size (2048 bits)
+      community.crypto.openssl_dhparam:
+        path: /home/graylog/nginx/ssl/dhparam.pem
+        size: 2048
+
     - community.general.docker_compose:
         project_name: graylog-3
         definition:
