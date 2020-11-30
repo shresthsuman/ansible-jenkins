@@ -18,6 +18,7 @@
                 - /home/graylog/graylog.conf:/etc/nginx/conf.d/graylog.conf:ro
                 - /home/graylog/nginx/ssl/graylog.crt:/etc/nginx/ssl/graylog.crt:ro
                 - /home/graylog/nginx/ssl/graylog.key:/etc/nginx/ssl/graylog.key:ro
+                - /home/graylog/nginx/ssl/dhparam.pem:/etc/nginx/ssl/dhparam.pem:ro
               ports:
                 - 80:80
                 - 443:443
