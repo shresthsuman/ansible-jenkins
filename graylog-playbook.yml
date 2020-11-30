@@ -22,6 +22,7 @@
           services:
             web:
               image: nginx:latest
+              user: graylog
               volumes:
                 - /home/graylog/nginx.conf:/etc/nginx/nginx.conf:ro
                 - /home/graylog/graylog.conf:/etc/nginx/conf.d/graylog.conf:ro
@@ -38,11 +39,13 @@
             # MongoDB: https://hub.docker.com/_/mongo/
             mongodb:
               image: mongo:3
+              user: graylog
               volumes:
                 - mongo_data:/data/db
             # Elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/6.x/docker.html
             elasticsearch:
               image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.10
+              user: graylog
               volumes:
                 - es_data:/usr/share/elasticsearch/data
               environment:
@@ -58,6 +61,7 @@
             # Graylog: https://hub.docker.com/r/graylog/graylog/
             graylog:
               image: graylog/graylog:3.3
+              user: graylog
               volumes:
                 - graylog_data:/usr/share/graylog/data
               environment:
